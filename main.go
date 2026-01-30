@@ -22,7 +22,7 @@ type DriverIdRequest struct {
 }
 
 type AddDriverResponse struct {
-	ID int64
+	ID int64 `json:"id"`
 }
 
 func main() {

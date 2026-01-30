@@ -8,14 +8,14 @@ import (
 )
 
 type Handler struct {
-	storage Storage
+	storage *Storage
 }
 
-func NewHandler(storage Storage) *Handler {
+func NewHandler(storage *Storage) *Handler {
 	return &Handler{storage: storage}
 }
 
-func (handler *Handler) AddDriverHandler(ctx *gin.Context) {
+func (h *Handler) AddDriverHandler(ctx *gin.Context) {
 	var newDriver Driver
 
 	if err := ctx.ShouldBindJSON(&newDriver); err != nil {
@@ -24,16 +24,17 @@ func (handler *Handler) AddDriverHandler(ctx *gin.Context) {
 		return
 	}
 
-	addDriverResponse, err := handler.storage.AddDriver(ctx, newDriver)
+	addDriverResponse, err := h.storage.AddDriver(ctx.Request.Context(), newDriver)
 	if err != nil {
 		log.Printf("Error: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{"id": addDriverResponse.ID})
 }
 
-func (handler *Handler) GetDriverHandler(ctx *gin.Context) {
+func (h *Handler) GetDriverHandler(ctx *gin.Context) {
 	var driverID DriverIdRequest
 
 	if err := ctx.ShouldBindUri(&driverID); err != nil {
@@ -42,19 +43,21 @@ func (handler *Handler) GetDriverHandler(ctx *gin.Context) {
 		return
 	}
 
-	driver, err := handler.storage.GetDriverById(ctx, driverID)
+	driver, err := h.storage.GetDriverById(ctx.Request.Context(), driverID)
 	if err != nil {
 		log.Printf("Error: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, driver)
 }
 
-func (handler *Handler) GetDriverListHandler(ctx *gin.Context) {
-	driverList, err := handler.storage.GetDriverList(ctx)
+func (h *Handler) GetDriverListHandler(ctx *gin.Context) {
+	driverList, err := h.storage.GetDriverList(ctx.Request.Context())
 	if err != nil {
 		log.Printf("Error: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
 		return
 	}
 

@@ -1,6 +1,7 @@
-package main
+package handler
 
 import (
+	storage "go-server-gin/storage"
 	"log"
 	"net/http"
 
@@ -8,15 +9,15 @@ import (
 )
 
 type Handler struct {
-	storage *Storage
+	storage *storage.Storage
 }
 
-func NewHandler(storage *Storage) *Handler {
+func NewHandler(storage *storage.Storage) *Handler {
 	return &Handler{storage: storage}
 }
 
 func (h *Handler) AddDriverHandler(ctx *gin.Context) {
-	var newDriver Driver
+	var newDriver storage.Driver
 
 	if err := ctx.ShouldBindJSON(&newDriver); err != nil {
 		log.Printf("Error: %v", err)
@@ -35,7 +36,7 @@ func (h *Handler) AddDriverHandler(ctx *gin.Context) {
 }
 
 func (h *Handler) GetDriverHandler(ctx *gin.Context) {
-	var driverID DriverIdRequest
+	var driverID storage.DriverIdRequest
 
 	if err := ctx.ShouldBindUri(&driverID); err != nil {
 		log.Printf("Error: %v", err)

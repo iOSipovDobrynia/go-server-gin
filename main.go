@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	handler "go-server-gin/handler"
+	storage "go-server-gin/storage"
 	"log"
 	"os"
 
@@ -9,21 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
-
-type Driver struct {
-	ID      int64  `json:"id"`
-	Name    string `json:"name" binding:"required"`
-	Vehicle string `json:"vehicle" binding:"required"`
-	Score   int    `json:"score" binding:"required"`
-}
-
-type DriverIdRequest struct {
-	ID int64 `json:"id" uri:"id" binding:"required"`
-}
-
-type AddDriverResponse struct {
-	ID int64 `json:"id"`
-}
 
 func main() {
 	err := godotenv.Load()
@@ -42,18 +29,18 @@ func main() {
 	}
 	defer pool.Close()
 
-	storage := NewStorage(pool)
-	handler := NewHandler(storage)
+	s := storage.NewStorage(pool)
+	h := handler.NewHandler(s)
 
 	router := gin.Default()
 	router.POST(
-		"/addDriver", handler.AddDriverHandler,
+		"/addDriver", h.AddDriverHandler,
 	)
 	router.GET(
-		"/driver/:id", handler.GetDriverHandler,
+		"/driver/:id", h.GetDriverHandler,
 	)
 	router.GET(
-		"/drivers", handler.GetDriverListHandler,
+		"/drivers", h.GetDriverListHandler,
 	)
 
 	router.Run()

@@ -1,10 +1,25 @@
-package main
+package storage
 
 import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type Driver struct {
+	ID      int64  `json:"id"`
+	Name    string `json:"name" binding:"required"`
+	Vehicle string `json:"vehicle" binding:"required"`
+	Score   int    `json:"score" binding:"required"`
+}
+
+type DriverIdRequest struct {
+	ID int64 `json:"id" uri:"id" binding:"required"`
+}
+
+type AddDriverResponse struct {
+	ID int64 `json:"id"`
+}
 
 type Storage struct {
 	pool *pgxpool.Pool

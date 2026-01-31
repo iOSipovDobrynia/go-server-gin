@@ -7,10 +7,24 @@ import (
 )
 
 type Driver struct {
-	ID      int64  `json:"id"`
-	Name    string `json:"name" binding:"required"`
-	Vehicle string `json:"vehicle" binding:"required"`
-	Score   int    `json:"score" binding:"required"`
+	ID        int64  `json:"id"`
+	Name      string `json:"name" binding:"required"`
+	VehicleID int64  `json:"vehicle_id" binding:"required"`
+	Score     int    `json:"score" binding:"required"`
+}
+
+type FullDriver struct {
+	ID      int64   `json:"id"`
+	Name    string  `json:"name"`
+	Vehicle Vehicle `json:"vehicle"`
+	Score   int     `json:"score"`
+}
+
+type Vehicle struct {
+	ID     int64  `json:"id"`
+	Type   string `json:"type"`
+	Vendor string `json:"vendor"`
+	Model  string `json:"model"`
 }
 
 type DriverIdRequest struct {
@@ -33,9 +47,9 @@ func (s *Storage) AddDriver(ctx context.Context, newDriver Driver) (AddDriverRes
 	var addDriverResponse AddDriverResponse
 	err := s.pool.QueryRow(
 		ctx,
-		"INSERT INTO drivers (name, vehicle, score) VALUES ($1, $2, $3) RETURNING id;",
+		"INSERT INTO drivers (name, vehicle_id, score) VALUES ($1, $2, $3) RETURNING id;",
 		newDriver.Name,
-		newDriver.Vehicle,
+		newDriver.VehicleID,
 		newDriver.Score,
 	).Scan(&addDriverResponse.ID)
 	if err != nil {
@@ -49,9 +63,33 @@ func (s *Storage) GetDriverById(ctx context.Context, driverID DriverIdRequest) (
 	var driver Driver
 	err := s.pool.QueryRow(
 		ctx,
-		"SELECT id, name, vehicle, score FROM drivers WHERE id=$1;",
+		"SELECT id, name, vehicle_id, score FROM drivers WHERE id=$1;",
 		driverID.ID,
-	).Scan(&driver.ID, &driver.Name, &driver.Vehicle, &driver.Score)
+	).Scan(&driver.ID, &driver.Name, &driver.VehicleID, &driver.Score)
+	if err != nil {
+		return nil, err
+	}
+
+	return &driver, nil
+}
+
+func (s *Storage) GetFullDriverById(ctx context.Context, driverID DriverIdRequest) (*FullDriver, error) {
+	var driver FullDriver
+	err := s.pool.QueryRow(
+		ctx,
+		`
+			SELECT d.id, d.name, v.id, v.type, v.vendor, v.model, d.score 
+			FROM drivers d 
+			INNER JOIN vehicles v 
+				ON d.vehicle_id = v.id 
+			WHERE d.id = $1;
+			`,
+		driverID.ID,
+	).Scan(
+		&driver.ID, &driver.Name, &driver.Vehicle.ID, &driver.Vehicle.Type, &driver.Vehicle.Vendor,
+		&driver.Vehicle.Model,
+		&driver.Score,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +98,7 @@ func (s *Storage) GetDriverById(ctx context.Context, driverID DriverIdRequest) (
 }
 
 func (s *Storage) GetDriverList(ctx context.Context) ([]Driver, error) {
-	rows, err := s.pool.Query(ctx, "SELECT id, name, vehicle, score FROM drivers;")
+	rows, err := s.pool.Query(ctx, "SELECT id, name, vehicle_id, score FROM drivers;")
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +107,7 @@ func (s *Storage) GetDriverList(ctx context.Context) ([]Driver, error) {
 	var driverList []Driver
 	for rows.Next() {
 		var driver Driver
-		err := rows.Scan(&driver.ID, &driver.Name, &driver.Vehicle, &driver.Score)
+		err := rows.Scan(&driver.ID, &driver.Name, &driver.VehicleID, &driver.Score)
 		if err != nil {
 			return nil, err
 		}

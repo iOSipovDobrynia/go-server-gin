@@ -40,6 +40,9 @@ func main() {
 		"/driver/:id", h.GetDriverHandler,
 	)
 	router.GET(
+		"/driver/:id/full", h.GetFullDriverHandler,
+	)
+	router.GET(
 		"/drivers", h.GetDriverListHandler,
 	)
 

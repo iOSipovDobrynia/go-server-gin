@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"errors"
 	storage "go-server-gin/storage"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Handler struct {
@@ -28,6 +30,15 @@ func (h *Handler) AddDriverHandler(ctx *gin.Context) {
 	addDriverResponse, err := h.storage.AddDriver(ctx.Request.Context(), newDriver)
 	if err != nil {
 		log.Printf("Error: %v", err)
+
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23503" {
+				ctx.JSON(http.StatusBadRequest, gin.H{"message": "vehicle_id does not exist"})
+				return
+			}
+		}
+
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
 		return
 	}

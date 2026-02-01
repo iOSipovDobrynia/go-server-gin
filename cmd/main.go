@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	handler "go-server-gin/handler"
-	storage "go-server-gin/storage"
+	"go-server-gin/internal/handler"
+	"go-server-gin/internal/service"
+	"go-server-gin/internal/storage"
 	"log"
 	"os"
 
@@ -30,7 +31,8 @@ func main() {
 	defer pool.Close()
 
 	s := storage.NewStorage(pool)
-	h := handler.NewHandler(s)
+	svc := service.NewService(s)
+	h := handler.NewHandler(svc)
 
 	router := gin.Default()
 	router.POST(

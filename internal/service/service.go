@@ -3,14 +3,20 @@ package service
 import (
 	"context"
 	"go-server-gin/internal/domain"
-	"go-server-gin/internal/storage"
 )
 
 type Service struct {
-	storage *storage.Storage
+	storage DriverStorage
 }
 
-func NewService(storage *storage.Storage) *Service {
+type DriverStorage interface {
+	AddDriver(ctx context.Context, newDriver domain.Driver) (domain.AddDriverResponse, error)
+	GetDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.Driver, error)
+	GetFullDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.FullDriver, error)
+	GetDriverList(ctx context.Context) ([]domain.Driver, error)
+}
+
+func NewService(storage DriverStorage) *Service {
 	return &Service{storage: storage}
 }
 

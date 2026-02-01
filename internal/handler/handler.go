@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"go-server-gin/internal/domain"
-	"go-server-gin/internal/service"
 	"log"
 	"net/http"
 
@@ -12,10 +12,17 @@ import (
 )
 
 type Handler struct {
-	service *service.Service
+	service DriverService
 }
 
-func NewHandler(service *service.Service) *Handler {
+type DriverService interface {
+	AddDriver(ctx context.Context, newDriver domain.Driver) (domain.AddDriverResponse, error)
+	GetDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.Driver, error)
+	GetFullDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.FullDriver, error)
+	GetDriverList(ctx context.Context) ([]domain.Driver, error)
+}
+
+func NewHandler(service DriverService) *Handler {
 	return &Handler{service: service}
 }
 

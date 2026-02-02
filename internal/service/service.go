@@ -6,17 +6,17 @@ import (
 )
 
 type Service struct {
-	storage DriverStorage
+	storage Storage
 }
 
-type DriverStorage interface {
+type Storage interface {
 	AddDriver(ctx context.Context, newDriver domain.Driver) (domain.AddDriverResponse, error)
 	GetDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.Driver, error)
 	GetFullDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.FullDriver, error)
 	GetDriverList(ctx context.Context) ([]domain.Driver, error)
 }
 
-func NewService(storage DriverStorage) *Service {
+func New(storage Storage) *Service {
 	return &Service{storage: storage}
 }
 

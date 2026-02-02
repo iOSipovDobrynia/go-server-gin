@@ -30,9 +30,9 @@ func main() {
 	}
 	defer pool.Close()
 
-	s := storage.NewStorage(pool)
-	svc := service.NewService(s)
-	h := handler.NewHandler(svc)
+	s := storage.New(pool)
+	svc := service.New(s)
+	h := handler.New(svc)
 
 	router := gin.Default()
 	router.POST(

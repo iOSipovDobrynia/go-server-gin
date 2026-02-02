@@ -12,17 +12,17 @@ import (
 )
 
 type Handler struct {
-	service DriverService
+	service Service
 }
 
-type DriverService interface {
+type Service interface {
 	AddDriver(ctx context.Context, newDriver domain.Driver) (domain.AddDriverResponse, error)
 	GetDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.Driver, error)
 	GetFullDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.FullDriver, error)
 	GetDriverList(ctx context.Context) ([]domain.Driver, error)
 }
 
-func NewHandler(service DriverService) *Handler {
+func New(service Service) *Handler {
 	return &Handler{service: service}
 }
 

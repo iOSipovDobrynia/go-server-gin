@@ -11,7 +11,7 @@ type Storage struct {
 	pool *pgxpool.Pool
 }
 
-func NewStorage(pool *pgxpool.Pool) *Storage {
+func New(pool *pgxpool.Pool) *Storage {
 	return &Storage{pool: pool}
 }
 

@@ -1,0 +1,25 @@
+### Добавление водителя (Успех)
+POST http://localhost:8080/addDriver
+Content-Type: application/json
+
+{
+  "name": "Ivan Petrov",
+  "vehicle_id": 1,
+  "score": 5
+}
+
+### Добавление водителя (Ошибка: нет такого vehicle_id)
+POST http://localhost:8080/addDriver
+Content-Type: application/json
+
+{
+  "name": "Ghost Rider",
+  "vehicle_id": 9999,
+  "score": 4
+}
+
+### Получение списка всех водителей
+GET http://localhost:8080/drivers
+
+### Получение полной информации о водителе (с JOIN)
+GET http://localhost:8080/driver/1/full

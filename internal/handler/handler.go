@@ -1,8 +1,9 @@
 package handler
 
 import (
+	"context"
 	"errors"
-	storage "go-server-gin/storage"
+	"go-server-gin/internal/domain"
 	"log"
 	"net/http"
 
@@ -11,15 +12,22 @@ import (
 )
 
 type Handler struct {
-	storage *storage.Storage
+	service DriverService
 }
 
-func NewHandler(storage *storage.Storage) *Handler {
-	return &Handler{storage: storage}
+type DriverService interface {
+	AddDriver(ctx context.Context, newDriver domain.Driver) (domain.AddDriverResponse, error)
+	GetDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.Driver, error)
+	GetFullDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.FullDriver, error)
+	GetDriverList(ctx context.Context) ([]domain.Driver, error)
+}
+
+func NewHandler(service DriverService) *Handler {
+	return &Handler{service: service}
 }
 
 func (h *Handler) AddDriverHandler(ctx *gin.Context) {
-	var newDriver storage.Driver
+	var newDriver domain.Driver
 
 	if err := ctx.ShouldBindJSON(&newDriver); err != nil {
 		log.Printf("Error: %v", err)
@@ -27,7 +35,7 @@ func (h *Handler) AddDriverHandler(ctx *gin.Context) {
 		return
 	}
 
-	addDriverResponse, err := h.storage.AddDriver(ctx.Request.Context(), newDriver)
+	addDriverResponse, err := h.service.AddDriver(ctx.Request.Context(), newDriver)
 	if err != nil {
 		log.Printf("Error: %v", err)
 
@@ -47,7 +55,7 @@ func (h *Handler) AddDriverHandler(ctx *gin.Context) {
 }
 
 func (h *Handler) GetDriverHandler(ctx *gin.Context) {
-	var driverID storage.DriverIdRequest
+	var driverID domain.DriverIdRequest
 
 	if err := ctx.ShouldBindUri(&driverID); err != nil {
 		log.Printf("Error: %v", err)
@@ -55,7 +63,7 @@ func (h *Handler) GetDriverHandler(ctx *gin.Context) {
 		return
 	}
 
-	driver, err := h.storage.GetDriverById(ctx.Request.Context(), driverID)
+	driver, err := h.service.GetDriverById(ctx.Request.Context(), driverID)
 	if err != nil {
 		log.Printf("Error: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
@@ -66,7 +74,7 @@ func (h *Handler) GetDriverHandler(ctx *gin.Context) {
 }
 
 func (h *Handler) GetFullDriverHandler(ctx *gin.Context) {
-	var driverID storage.DriverIdRequest
+	var driverID domain.DriverIdRequest
 
 	if err := ctx.ShouldBindUri(&driverID); err != nil {
 		log.Printf("Error: %v", err)
@@ -74,7 +82,7 @@ func (h *Handler) GetFullDriverHandler(ctx *gin.Context) {
 		return
 	}
 
-	driver, err := h.storage.GetFullDriverById(ctx.Request.Context(), driverID)
+	driver, err := h.service.GetFullDriverById(ctx.Request.Context(), driverID)
 	if err != nil {
 		log.Printf("Error: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
@@ -85,7 +93,7 @@ func (h *Handler) GetFullDriverHandler(ctx *gin.Context) {
 }
 
 func (h *Handler) GetDriverListHandler(ctx *gin.Context) {
-	driverList, err := h.storage.GetDriverList(ctx.Request.Context())
+	driverList, err := h.service.GetDriverList(ctx.Request.Context())
 	if err != nil {
 		log.Printf("Error: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})

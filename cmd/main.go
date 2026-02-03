@@ -11,8 +11,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+
+	_ "go-server-gin/docs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title driver api
+// @version         1.0
+// @description     Это сервер для управления водителями.
+// @host            localhost:8080
+// @BasePath        /
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -47,6 +57,7 @@ func main() {
 	router.GET(
 		"/drivers", h.GetDriverListHandler,
 	)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.Run()
 }

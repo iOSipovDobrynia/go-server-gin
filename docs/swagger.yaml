@@ -1,0 +1,140 @@
+basePath: /
+definitions:
+  go-server-gin_internal_domain.AddDriverResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  go-server-gin_internal_domain.Driver:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      score:
+        type: integer
+      vehicle_id:
+        type: integer
+    required:
+    - name
+    - score
+    - vehicle_id
+    type: object
+  go-server-gin_internal_domain.FullDriver:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      score:
+        type: integer
+      vehicle:
+        $ref: '#/definitions/go-server-gin_internal_domain.Vehicle'
+    type: object
+  go-server-gin_internal_domain.Vehicle:
+    properties:
+      id:
+        type: integer
+      model:
+        type: string
+      type:
+        type: string
+      vendor:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Это сервер для управления водителями.
+  title: driver api
+  version: "1.0"
+paths:
+  /addDriver:
+    post:
+      consumes:
+      - application/json
+      description: Создает запись о водителе в базе данных
+      parameters:
+      - description: Данные водителя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/go-server-gin_internal_domain.Driver'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/go-server-gin_internal_domain.AddDriverResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Добавить нового водителя
+      tags:
+      - drivers
+  /driver/{id}:
+    get:
+      description: Получает информацию о водителе по его уникальному идентификатору
+      parameters:
+      - description: ID водителя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go-server-gin_internal_domain.Driver'
+        "400":
+          description: Неверный ID
+          schema:
+            type: string
+      summary: Получить информацию о водителе
+      tags:
+      - drivers
+  /driver/{id}/full:
+    get:
+      description: Получить информацию о водителе и транспортном средстве по его уникальному
+        идентификатору водителя
+      parameters:
+      - description: ID водителя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go-server-gin_internal_domain.FullDriver'
+        "400":
+          description: Неверный ID
+          schema:
+            type: string
+      summary: Получить информацию о водителе и транспортном средстве
+      tags:
+      - drivers
+  /drivers:
+    get:
+      description: Получить информацию о водителях
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/go-server-gin_internal_domain.Driver'
+            type: array
+      summary: Получить информацию о водителях
+      tags:
+      - drivers
+swagger: "2.0"

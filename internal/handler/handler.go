@@ -12,20 +12,30 @@ import (
 )
 
 type Handler struct {
-	service DriverService
+	service Service
 }
 
-type DriverService interface {
+type Service interface {
 	AddDriver(ctx context.Context, newDriver domain.Driver) (domain.AddDriverResponse, error)
 	GetDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.Driver, error)
 	GetFullDriverById(ctx context.Context, driverID domain.DriverIdRequest) (*domain.FullDriver, error)
 	GetDriverList(ctx context.Context) ([]domain.Driver, error)
 }
 
-func NewHandler(service DriverService) *Handler {
+func New(service Service) *Handler {
 	return &Handler{service: service}
 }
 
+// AddDriverHandler godoc
+// @Summary      Добавить нового водителя
+// @Description  Создает запись о водителе в базе данных
+// @Tags         drivers
+// @Accept       json
+// @Produce      json
+// @Param        input   body      domain.Driver  true  "Данные водителя"
+// @Success      201     {object}  domain.AddDriverResponse
+// @Failure      400     {string}  string "Bad Request"
+// @Router       /addDriver [post]
 func (h *Handler) AddDriverHandler(ctx *gin.Context) {
 	var newDriver domain.Driver
 
@@ -54,6 +64,15 @@ func (h *Handler) AddDriverHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"id": addDriverResponse.ID})
 }
 
+// GetDriverHandler godoc
+// @Summary      Получить информацию о водителе
+// @Description  Получает информацию о водителе по его уникальному идентификатору
+// @Tags         drivers
+// @Produce      json
+// @Param        id   path int true  "ID водителя"
+// @Success      200     {object}  domain.Driver
+// @Failure      400  {string}  string "Неверный ID"
+// @Router       /driver/{id} [get]
 func (h *Handler) GetDriverHandler(ctx *gin.Context) {
 	var driverID domain.DriverIdRequest
 
@@ -73,6 +92,15 @@ func (h *Handler) GetDriverHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, driver)
 }
 
+// GetFullDriverHandler godoc
+// @Summary      Получить информацию о водителе и транспортном средстве
+// @Description  Получить информацию о водителе и транспортном средстве по его уникальному идентификатору водителя
+// @Tags         drivers
+// @Produce      json
+// @Param        id   path int true  "ID водителя"
+// @Success      200     {object}  domain.FullDriver
+// @Failure      400  {string}  string "Неверный ID"
+// @Router       /driver/{id}/full [get]
 func (h *Handler) GetFullDriverHandler(ctx *gin.Context) {
 	var driverID domain.DriverIdRequest
 
@@ -92,6 +120,13 @@ func (h *Handler) GetFullDriverHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, driver)
 }
 
+// GetDriverListHandler godoc
+// @Summary      Получить информацию о водителях
+// @Description  Получить информацию о водителях
+// @Tags         drivers
+// @Produce      json
+// @Success      200     {array}  domain.Driver
+// @Router       /drivers [get]
 func (h *Handler) GetDriverListHandler(ctx *gin.Context) {
 	driverList, err := h.service.GetDriverList(ctx.Request.Context())
 	if err != nil {
